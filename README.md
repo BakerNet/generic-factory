@@ -3,8 +3,9 @@
 This package is a library for having a factory process data/jobs in parallel without blocking execution of your main program.
 
 Example use cases:
-    - set number of workers uploading to S3 - limits number of concurrent uploads
-    - process data in parallel -> use doneChans for easy synchronization (see example)
+
+* set number of workers uploading to S3 - limits number of concurrent uploads
+* process data in parallel -> use doneChans for easy synchronization (see example)
 
 ## Getting Started
 
@@ -29,6 +30,10 @@ doneChan := f.Dispatch(jobData)
 // close factory - will end all go routines.  Unfinished jobs will send error on their done channels
 f.Close()
 ```
+
+## Documentation (Godoc)
+
+* [Godoc](https://godoc.org/github.com/BakerNet/generic-factory)
 
 ## Running the tests
 
