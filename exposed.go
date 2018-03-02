@@ -6,22 +6,29 @@ import (
 
 // Job represents the data which will be processed by the workers
 type Job interface {
-	// Process is the function called by the worker goroutines.  Put your logic in your data's process method.
-	// Note:  worker will also pre-process data with Register(ed) callbacks.  See Factory.Register
+	// Process is the function called by the worker goroutines.  Put your logic
+	// in your data's process method.
+	// Note:  worker will also pre-process data with Register(ed) callbacks
 	Process()
 }
 
-// Factory represents a worker factory.  Workers process jobs requests concurrently.
+// Factory represents a worker factory.  Workers process jobs requests
+// concurrently.
 type Factory interface {
-	// Register callback to be called on each job received by a worker before processing the Job - may Register an arbitrary number of callbacks
+	// Register callback to be called on each job received by a worker before
+	// processing the Job - may Register an arbitrary number of callbacks
 	Register(func(Job))
-	// Dispatch job to an available worker - returned channel will be closed when worker job has been processed.  Returns a ClosedFactoryError if job is not completed before Factory has shut down
+	// Dispatch job to an available worker - returned channel will be closed
+	// when worker job has been processed.  Returns a ClosedFactoryError if job
+	// is not completed before Factory has shut down
 	Dispatch(Job) chan error
-	// Close will stop all workers and prevent future dispatch jobs from being handled
+	// Close will stop all workers and prevent future dispatch jobs from being
+	// handled
 	Close()
 }
 
-// NewFactory returns a Factory - will fire up numWorkers worker routines.  Will close when ctx is done.
+// NewFactory returns a Factory - will fire up numWorkers worker routines.  Will
+// close when ctx is done.
 func NewFactory(ctx context.Context, numWorkers uint) Factory {
 	f := &factory{
 		state: state{
@@ -40,7 +47,8 @@ func NewFactory(ctx context.Context, numWorkers uint) Factory {
 	return f
 }
 
-// ClosedFactoryError - error returned by Dispatch channel if job was not handled due to the Factory being closed
+// ClosedFactoryError - error returned by Dispatch channel if job was not
+// handled due to the Factory being closed
 type ClosedFactoryError struct{}
 
 func (ClosedFactoryError) Error() string {
