@@ -52,5 +52,5 @@ func NewFactory(ctx context.Context, numWorkers uint) Factory {
 type ClosedFactoryError struct{}
 
 func (ClosedFactoryError) Error() string {
-	return "Factory closed before job could be handled"
+	return "factory closed before job could be handled"
 }

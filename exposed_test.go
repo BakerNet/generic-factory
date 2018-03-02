@@ -72,3 +72,10 @@ func TestFactoryErrorAfterCtxDone(t *testing.T) {
 		t.Fatalf("Expected error for dispatch after close")
 	}
 }
+
+func TestClosedFactoryErrorMsg(t *testing.T) {
+	err := ClosedFactoryError{}
+	if err.Error() != "factory closed before job could be handled" {
+		t.Errorf("Wrong error messa")
+	}
+}

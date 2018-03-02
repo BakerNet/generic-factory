@@ -16,7 +16,7 @@ func TestRegister(t *testing.T) {
 	}
 }
 
-func TestClosedFactoryErrrorFromDispatch(t *testing.T) {
+func TestClosedFactoryErrorFromDispatch(t *testing.T) {
 	i := intJob(1)
 
 	f := &factory{done: make(chan struct{})}
