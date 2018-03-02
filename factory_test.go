@@ -9,16 +9,18 @@ func TestRegister(t *testing.T) {
 	if len(f.callbacks) != 0 {
 		t.Errorf("Expected no callbacks, got: %d", len(f.callbacks))
 	}
-	f.Register(func(interface{}) {})
-	f.Register(func(interface{}) {})
+	f.Register(func(Job) {})
+	f.Register(func(Job) {})
 	if len(f.callbacks) != 2 {
 		t.Errorf("Expected 2 callbacks, got: %d", len(f.callbacks))
 	}
 }
 
 func TestClosedFactoryErrrorFromDispatch(t *testing.T) {
+	i := intJob(1)
+
 	f := &factory{done: make(chan struct{})}
-	dc := f.Dispatch(1)
+	dc := f.Dispatch(&i)
 	f.Close()
 	if err := <-dc; err != nil {
 		switch err.(type) {

@@ -6,7 +6,7 @@ import (
 )
 
 type state struct {
-	callbacks []func(interface{})
+	callbacks []func(Job)
 	jobCh     chan job
 }
 
@@ -20,7 +20,7 @@ type factory struct {
 	workers    []*worker
 }
 
-func (f *factory) Register(cb func(interface{})) {
+func (f *factory) Register(cb func(Job)) {
 	f.Lock()
 	defer f.Unlock()
 	f.callbacks = append(f.callbacks, cb)
@@ -29,7 +29,7 @@ func (f *factory) Register(cb func(interface{})) {
 	}
 }
 
-func (f *factory) Dispatch(data interface{}) chan error {
+func (f *factory) Dispatch(data Job) chan error {
 	dc := make(chan error, 1)
 	go func(j job) {
 		select {

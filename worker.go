@@ -27,6 +27,7 @@ func (w *worker) start() {
 			for _, f := range w.fs.callbacks {
 				f(job.data)
 			}
+			job.data.Process()
 			job.doneCh <- nil
 			close(job.doneCh)
 		case <-w.updateCh:

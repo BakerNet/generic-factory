@@ -4,12 +4,19 @@ import (
 	"context"
 )
 
+// Job represents the data which will be processed by the workers
+type Job interface {
+	// Process is the function called by the worker goroutines.  Put your logic in your data's process method.
+	// Note:  worker will also pre-process data with Register(ed) callbacks.  See Factory.Register
+	Process()
+}
+
 // Factory represents a worker factory.  Workers process jobs requests concurrently.
 type Factory interface {
-	// Register callback to be called on each job received by a worker - may Register an arbitrary number of callbacks
-	Register(func(interface{}))
+	// Register callback to be called on each job received by a worker before processing the Job - may Register an arbitrary number of callbacks
+	Register(func(Job))
 	// Dispatch job to an available worker - returned channel will be closed when worker job has been processed.  Returns a ClosedFactoryError if job is not completed before Factory has shut down
-	Dispatch(interface{}) chan error
+	Dispatch(Job) chan error
 	// Close will stop all workers and prevent future dispatch jobs from being handled
 	Close()
 }
@@ -18,7 +25,7 @@ type Factory interface {
 func NewFactory(ctx context.Context, numWorkers uint) Factory {
 	f := &factory{
 		state: state{
-			callbacks: []func(interface{}){},
+			callbacks: []func(Job){},
 			jobCh:     make(chan job, numWorkers),
 		},
 		ctx:        ctx,

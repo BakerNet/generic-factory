@@ -1,6 +1,6 @@
 package factory
 
 type job struct {
-	data   interface{}
+	data   Job
 	doneCh chan error
 }

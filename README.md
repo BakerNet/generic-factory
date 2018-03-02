@@ -5,7 +5,7 @@ This package is a library for having a factory process data/jobs in parallel wit
 Example use cases:
 
 * set number of workers uploading to S3 - limits number of concurrent uploads
-* process data in parallel -> use doneChans for easy synchronization (see example)
+* process data in parallel -> use doneChans for easy synchronization (see example in godoc)
 
 ## Getting Started
 
@@ -22,11 +22,10 @@ Then import library in your code.
 To use:
 ```Go
 f := factory.NewFactory(ctx, numWorkers)
-// register callbacks - remember to have callbacks use type assertion
+// register callbacks to preprocess data - remember to have callbacks use type assertion
 f.Register(callback1)
-f.Register(callback2)
-// send job to next available worker
-doneChan := f.Dispatch(jobData)
+// send Job to next available worker
+doneChan := f.Dispatch(job)
 // close factory - will end all go routines.  Unfinished jobs will send error on their done channels
 f.Close()
 ```

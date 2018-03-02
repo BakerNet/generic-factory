@@ -7,18 +7,33 @@ import (
 	"time"
 )
 
+type intJob int
+
+func (i *intJob) Process() {
+	fmt.Println(*i)
+}
+
 func ExampleNewFactory_output() {
+	/*
+		type intJob int
+		// Here, we use pointer to our data so we can register a function
+		// which will modify the data before we call Process
+		func (i *intJob) Process() { fmt.Println(*i) }
+	*/
+
 	ctx := context.Background()
+	i := intJob(2)
+	i2 := intJob(4)
 
 	intFactory := NewFactory(ctx, 2)
-
-	intFactory.Register(func(data interface{}) {
-		fmt.Println(5 + data.(int))
+	intFactory.Register(func(j Job) {
+		d := j.(*intJob)
+		*d = *d + 5
 	})
 
 	doneChans := make([]chan error, 2)
-	doneChans[0] = intFactory.Dispatch(2)
-	doneChans[1] = intFactory.Dispatch(4)
+	doneChans[0] = intFactory.Dispatch(&i)
+	doneChans[1] = intFactory.Dispatch(&i2)
 
 	for _, dc := range doneChans {
 		if err := <-dc; err != nil {
@@ -33,10 +48,11 @@ func ExampleNewFactory_output() {
 
 func TestFactoryErrorAfterClose(t *testing.T) {
 	ctx := context.Background()
+	i := intJob(1)
 
 	f := NewFactory(ctx, 2)
 	f.Close()
-	dc := f.Dispatch(1)
+	dc := f.Dispatch(&i)
 
 	if err := <-dc; err == nil {
 		t.Fatalf("Expected error for dispatch after close")
@@ -45,11 +61,12 @@ func TestFactoryErrorAfterClose(t *testing.T) {
 
 func TestFactoryErrorAfterCtxDone(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
+	i := intJob(1)
 
 	f := NewFactory(ctx, 2)
 	cancel()
 	time.Sleep(1 * time.Millisecond)
-	dc := f.Dispatch(1)
+	dc := f.Dispatch(&i)
 
 	if err := <-dc; err == nil {
 		t.Fatalf("Expected error for dispatch after close")
