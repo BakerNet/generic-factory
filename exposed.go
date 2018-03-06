@@ -23,7 +23,7 @@ type Factory interface {
 	// Job.Process
 	Dispatch(Job) chan error
 	// Close will stop all workers and prevent future dispatch jobs from being
-	// handled
+	// handled.  Blocks until all worker goroutines have cleaned up
 	Close()
 }
 
@@ -36,7 +36,8 @@ func NewFactory(ctx context.Context, numWorkers uint) Factory {
 			jobCh:     make(chan job, numWorkers),
 		},
 		ctx:        ctx,
-		done:       make(chan struct{}),
+		quit:       make(chan struct{}),
+		doneCh:     make(chan struct{}),
 		dispatchCh: make(chan job),
 		workers:    make([]*worker, numWorkers),
 	}

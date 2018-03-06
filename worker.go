@@ -6,7 +6,10 @@ type worker struct {
 	updateCh     chan struct{}
 	updateDoneCh chan struct{}
 	quit         chan struct{}
-	done         bool
+	// internal flag to prevent panic
+	done bool
+	// external signal that worker has completed cleanup
+	doneCh chan struct{}
 }
 
 func newWorker(fs state) *worker {
@@ -15,6 +18,7 @@ func newWorker(fs state) *worker {
 		updateCh:     make(chan struct{}),
 		updateDoneCh: make(chan struct{}),
 		quit:         make(chan struct{}),
+		doneCh:       make(chan struct{}),
 	}
 	go worker.start()
 	return worker
@@ -37,6 +41,7 @@ func (w *worker) start() {
 				job.doneCh <- ClosedFactoryError{}
 			default:
 			}
+			close(w.doneCh)
 			return
 		}
 	}

@@ -13,9 +13,11 @@ type state struct {
 type factory struct {
 	sync.Mutex
 	state
-	ctx        context.Context
-	done       chan struct{}
-	isClosed   bool
+	ctx      context.Context
+	quit     chan struct{}
+	isClosed bool
+	// signal workers have all cleaned up
+	doneCh     chan struct{}
 	dispatchCh chan job
 	workers    []*worker
 }
@@ -35,7 +37,7 @@ func (f *factory) Dispatch(data Job) chan error {
 		select {
 		case f.dispatchCh <- j:
 			return
-		case <-f.done:
+		case <-f.quit:
 			dc <- ClosedFactoryError{}
 			return
 		}
@@ -43,7 +45,6 @@ func (f *factory) Dispatch(data Job) chan error {
 	return dc
 }
 
-// TODO - make Close block until all workers completed?
 func (f *factory) Close() {
 	f.Lock()
 	defer f.Unlock()
@@ -51,7 +52,8 @@ func (f *factory) Close() {
 		return
 	}
 	f.isClosed = true
-	close(f.done)
+	close(f.quit)
+	<-f.doneCh
 }
 
 func (f *factory) manage() {
@@ -59,17 +61,21 @@ func (f *factory) manage() {
 		select {
 		case <-f.ctx.Done():
 			f.Close()
-		case <-f.done:
+		case <-f.quit:
 		}
 	}()
 	for {
 		select {
 		case job := <-f.dispatchCh:
 			f.jobCh <- job
-		case <-f.done:
+		case <-f.quit:
 			for _, w := range f.workers {
 				w.Stop()
 			}
+			for _, w := range f.workers {
+				<-w.doneCh
+			}
+			close(f.doneCh)
 			return
 		}
 	}

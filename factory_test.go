@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"context"
 	"testing"
 )
 
@@ -19,7 +20,12 @@ func TestRegister(t *testing.T) {
 func TestClosedFactoryErrorFromDispatch(t *testing.T) {
 	i := intJob(1)
 
-	f := &factory{done: make(chan struct{})}
+	f := &factory{
+		ctx:    context.Background(),
+		quit:   make(chan struct{}),
+		doneCh: make(chan struct{}),
+	}
+	go f.manage()
 	dc := f.Dispatch(&i)
 	f.Close()
 	if err := <-dc; err != nil {
@@ -34,10 +40,15 @@ func TestClosedFactoryErrorFromDispatch(t *testing.T) {
 }
 
 func TestCloseMultipleTimes(t *testing.T) {
-	f := &factory{done: make(chan struct{})}
+	f := &factory{
+		ctx:    context.Background(),
+		quit:   make(chan struct{}),
+		doneCh: make(chan struct{}),
+	}
+	go f.manage()
 	f.Close()
 	select {
-	case <-f.done:
+	case <-f.quit:
 	default:
 		t.Error("Expected f.done to be closed")
 	}
