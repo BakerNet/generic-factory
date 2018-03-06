@@ -9,8 +9,9 @@ import (
 
 type intJob int
 
-func (i *intJob) Process() {
+func (i *intJob) Process() error {
 	fmt.Println(*i)
+	return nil
 }
 
 func ExampleNewFactory_output() {
@@ -18,7 +19,10 @@ func ExampleNewFactory_output() {
 		type intJob int
 		// Here, we use pointer to our data so we can register a function
 		// which will modify the data before we call Process
-		func (i *intJob) Process() { fmt.Println(*i) }
+		func (i *intJob) Process() error {
+			fmt.Println(*i)
+			return nil
+		}
 	*/
 
 	ctx := context.Background()

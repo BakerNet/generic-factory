@@ -9,7 +9,7 @@ type Job interface {
 	// Process is the function called by the worker goroutines.  Put your logic
 	// in your data's process method.
 	// Note:  worker will also pre-process data with Register(ed) callbacks
-	Process()
+	Process() error
 }
 
 // Factory represents a worker factory.  Workers process jobs requests
@@ -18,9 +18,9 @@ type Factory interface {
 	// Register callback to be called on each job received by a worker before
 	// processing the Job - may Register an arbitrary number of callbacks
 	Register(func(Job))
-	// Dispatch job to an available worker - returned channel will be closed
-	// when worker job has been processed.  Returns a ClosedFactoryError if job
-	// is not completed before Factory has shut down
+	// Dispatch job to an available worker.  Sends a ClosedFactoryError if job
+	// is not completed before Factory has shut down.  Else sends error from
+	// Job.Process
 	Dispatch(Job) chan error
 	// Close will stop all workers and prevent future dispatch jobs from being
 	// handled

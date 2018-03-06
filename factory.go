@@ -37,13 +37,13 @@ func (f *factory) Dispatch(data Job) chan error {
 			return
 		case <-f.done:
 			dc <- ClosedFactoryError{}
-			close(dc)
 			return
 		}
 	}(job{data, dc})
 	return dc
 }
 
+// TODO - make Close block until all workers completed?
 func (f *factory) Close() {
 	f.Lock()
 	defer f.Unlock()

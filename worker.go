@@ -27,16 +27,14 @@ func (w *worker) start() {
 			for _, f := range w.fs.callbacks {
 				f(job.data)
 			}
-			job.data.Process()
-			job.doneCh <- nil
-			close(job.doneCh)
+			err := job.data.Process()
+			job.doneCh <- err
 		case <-w.updateCh:
 			<-w.updateDoneCh
 		case <-w.quit:
 			select {
 			case job := <-w.fs.jobCh:
 				job.doneCh <- ClosedFactoryError{}
-				close(job.doneCh)
 			default:
 			}
 			return
