@@ -30,6 +30,7 @@ func ExampleNewFactory_output() {
 	i2 := intJob(4)
 
 	intFactory := NewFactory(ctx, 2)
+	go intFactory.Run()
 	intFactory.Register(func(j Job) {
 		d := j.(*intJob)
 		*d = *d + 5
@@ -55,6 +56,7 @@ func TestFactoryErrorAfterClose(t *testing.T) {
 	i := intJob(1)
 
 	f := NewFactory(ctx, 2)
+	go f.Run()
 	f.Close()
 	dc := f.Dispatch(&i)
 
@@ -68,6 +70,7 @@ func TestFactoryErrorAfterCtxDone(t *testing.T) {
 	i := intJob(1)
 
 	f := NewFactory(ctx, 2)
+	go f.Run()
 	cancel()
 	time.Sleep(1 * time.Millisecond)
 	dc := f.Dispatch(&i)

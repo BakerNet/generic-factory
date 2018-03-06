@@ -6,7 +6,7 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	f := &factory{}
+	f := &Factory{}
 	if len(f.callbacks) != 0 {
 		t.Errorf("Expected no callbacks, got: %d", len(f.callbacks))
 	}
@@ -20,12 +20,11 @@ func TestRegister(t *testing.T) {
 func TestClosedFactoryErrorFromDispatch(t *testing.T) {
 	i := intJob(1)
 
-	f := &factory{
+	f := &Factory{
 		ctx:    context.Background(),
 		quit:   make(chan struct{}),
-		doneCh: make(chan struct{}),
-	}
-	go f.manage()
+		doneCh: make(chan struct{})}
+	go f.Run()
 	dc := f.Dispatch(&i)
 	f.Close()
 	if err := <-dc; err != nil {
@@ -40,12 +39,12 @@ func TestClosedFactoryErrorFromDispatch(t *testing.T) {
 }
 
 func TestCloseMultipleTimes(t *testing.T) {
-	f := &factory{
+	f := &Factory{
 		ctx:    context.Background(),
 		quit:   make(chan struct{}),
 		doneCh: make(chan struct{}),
 	}
-	go f.manage()
+	go f.Run()
 	f.Close()
 	select {
 	case <-f.quit:

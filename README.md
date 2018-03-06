@@ -22,6 +22,7 @@ Then import library in your code.
 To use:
 ```Go
 f := factory.NewFactory(ctx, numWorkers)
+go f.Run()
 // register callbacks to preprocess data - remember to have callbacks use type assertion
 f.Register(callback1)
 // send Job to next available worker
