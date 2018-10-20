@@ -47,7 +47,7 @@ go test ./...
 
 ## Contributing
 
-Have fun
+Have fun!
 
 ## Authors
 
